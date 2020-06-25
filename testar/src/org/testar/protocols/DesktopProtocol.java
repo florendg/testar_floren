@@ -42,7 +42,13 @@ import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.monkey.ConfigTags;
 import org.testar.OutputStructure;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
+import java.util.stream.Stream;
+
 import static org.fruit.alayer.Tags.Blocked;
 import static org.fruit.alayer.Tags.Enabled;
 
@@ -58,6 +64,15 @@ public class DesktopProtocol extends GenericUtilsProtocol {
      */
     @Override
     protected void preSequencePreparations() {
+    	
+    	if(!new File(settings.get(ConfigTags.InputFileText)).exists()) {
+    		System.out.println("Warning: BLNS file from "+ settings.get(ConfigTags.ProtocolClass) + " settings cannot be readed, "
+    				+ "check if the current value is correct: " + settings.get(ConfigTags.InputFileText));
+    		System.out.println("Example of correct value: \"InputFileText = ./settings/desktop_generic/blns.txt\" ");
+    		System.out.println("If you want to use a set of advanced Strings to test the text input fields, "
+    				+ "please configure properly the InputFileText setting");
+    	}
+    	
         //initializing the HTML sequence report:
         htmlReport = new HtmlSequenceReport();
     }
@@ -242,7 +257,14 @@ public class DesktopProtocol extends GenericUtilsProtocol {
                     // We want to create actions that consist of typing into them
                     if(isTypeable(w) && (isUnfiltered(w) || whiteListed(w))) {
                         //Create a type action with the Action Compiler, and add it to the set of derived actions
-                        actions.add(ac.clickTypeInto(w, this.getRandomText(w), true));
+                        final Optional<String[]> textList = Optional.ofNullable(getTextInputsFromFile(settings.get(ConfigTags.InputFileText)));
+                        
+                        //final String textToInsert = textList.isPresent() ? textList.get()[new Random().nextInt(textList.get().length)] : this.getRandomText(w);
+                        final Action typeAction = textList.isPresent() ?
+                        		ac.pasteTextInto(w, textList.get()[new Random().nextInt(textList.get().length)], true) :
+                        			ac.clickTypeInto(w, this.getRandomText(w), true);
+                        
+                        actions.add(typeAction);
                     }
                     //Add sliding actions (like scroll, drag and drop) to the derived actions
                     //method defined below.
@@ -303,7 +325,14 @@ public class DesktopProtocol extends GenericUtilsProtocol {
                     // We want to create actions that consist of typing into them
                     if(isTypeable(w) && (isUnfiltered(w) || whiteListed(w))) {
                         //Create a type action with the Action Compiler, and add it to the set of derived actions
-                        actions.add(ac.clickTypeInto(w, this.getRandomText(w), true));
+                        final Optional<String[]> textList = Optional.ofNullable(getTextInputsFromFile(settings.get(ConfigTags.InputFileText)));
+                        
+                        //final String textToInsert = textList.isPresent() ? textList.get()[new Random().nextInt(textList.get().length)] : this.getRandomText(w);
+                        final Action typeAction = textList.isPresent() ?
+                        		ac.pasteTextInto(w, textList.get()[new Random().nextInt(textList.get().length)], true) :
+                        			ac.clickTypeInto(w, this.getRandomText(w), true);
+                        
+                        actions.add(typeAction);
                     }
                     //Add sliding actions (like scroll, drag and drop) to the derived actions
                     //method defined below.
@@ -312,5 +341,13 @@ public class DesktopProtocol extends GenericUtilsProtocol {
             }
         }
         return actions;
+    }
+
+    private String[] getTextInputsFromFile(final String inputFile) {
+        try (final Stream<String> lines = Files.lines(new File(inputFile).toPath())) {
+            return lines.filter(line -> !line.startsWith("#") && !line.isEmpty()).toArray(String[]::new);
+        } catch (IOException e) {
+            return null;
+        }
     }
 }

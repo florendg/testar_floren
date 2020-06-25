@@ -33,6 +33,8 @@ package org.testar.protocols;
 
 import es.upv.staq.testar.NativeLinker;
 import es.upv.staq.testar.protocols.ClickFilterLayerProtocol;
+
+import org.apache.commons.lang.StringEscapeUtils;
 import org.fruit.Drag;
 import org.fruit.Util;
 import org.fruit.alayer.*;
@@ -110,6 +112,42 @@ public class GenericUtilsProtocol extends ClickFilterLayerProtocol {
             if(widget!=null){
                 StdActionCompiler ac = new AnnotatingActionCompiler();
                 executeAction(system,state,ac.clickTypeInto(widget, textToType, true));
+                // is waiting needed after the action has been executed?
+                return true;
+            }
+            else{
+                Util.pause(waitBetween);
+                state = getState(system);
+                numberOfRetries++;
+            }
+        }
+        System.out.println("Matching widget was not found, "+tag.toString()+"=" + value);
+        printTagValuesOfWidgets(tag,state);
+        return false;
+    }
+    
+    /**
+     * This method waits until the widget with a matching Tag value (case sensitive) is found or the retry limit is reached.
+     * If a matching widget is found, left mouse button is clicked on it, the given text is pasted into it, and return value is true.
+     * Else returns false
+     *
+     * @param tag for example: org.fruit.alayer.Tags.Title
+     * @param value
+     * @param textToPaste paste the given text by replacing the existing text
+     * @param state
+     * @param system needed for updating the state between retries
+     * @param maxNumberOfRetries int number of times
+     * @param waitBetween double in seconds
+     * @return
+     */
+    protected boolean waitLeftClickAndPasteIntoWidgetWithMatchingTag(Tag<?> tag, String value, String textToPaste, State state, SUT system, int maxNumberOfRetries, double waitBetween){
+        int numberOfRetries = 0;
+        while(numberOfRetries<maxNumberOfRetries){
+            //looking for a widget with matching tag value:
+            Widget widget = getWidgetWithMatchingTag(tag,value,state);
+            if(widget!=null){
+                StdActionCompiler ac = new AnnotatingActionCompiler();
+                executeAction(system, state, ac.pasteTextInto(widget, textToPaste, true));
                 // is waiting needed after the action has been executed?
                 return true;
             }

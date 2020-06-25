@@ -1,6 +1,6 @@
 /***************************************************************************************************
 * Copyright (c) 2013, 2014, 2015, 2016, 2017 Universitat Politecnica de Valencia - www.upv.es
-* Copyright (c) 2017 Open Universiteit - www.ou.nl
+* Copyright (c) 2017, 2019 Open Universiteit - www.ou.nl
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -29,26 +29,27 @@
 
 package org.fruit.alayer.actions;
 
+import static java.awt.event.KeyEvent.VK_ALT;
+import static java.awt.event.KeyEvent.VK_CONTROL;
 import static org.junit.Assert.*;
 
 import org.fruit.alayer.Action;
-import org.fruit.alayer.devices.KBKeys;
 import org.junit.Test;
 
 public class KeyActionTest {
 
 	@Test
 	public void testEquals() {
-		Action a = new KeyDown(KBKeys.VK_CONTROL);
-		assertFalse(a.equals("Not a KeyAction"));
-		assertFalse(a.equals(new KeyDown(KBKeys.VK_ALT)));
-		assertFalse(a.equals(new KeyUp(KBKeys.VK_CONTROL)));
-		assertTrue(a.equals(new KeyDown(KBKeys.VK_CONTROL)));
-		a = new KeyUp(KBKeys.VK_CONTROL);
-		assertFalse(a.equals("Not a KeyAction"));
-		assertFalse(a.equals(new KeyUp(KBKeys.VK_ALT)));
-		assertFalse(a.equals(new KeyDown(KBKeys.VK_CONTROL)));
-		assertTrue(a.equals(new KeyUp(KBKeys.VK_CONTROL)));
+		Action a = new KeyDown(VK_CONTROL);
+		assertNotEquals("Not a KeyAction", a);
+		assertNotEquals(a, new KeyDown(VK_ALT));
+		assertNotEquals(a, new KeyUp(VK_CONTROL));
+		assertEquals(a, new KeyDown(VK_CONTROL));
+		a = new KeyUp(VK_CONTROL);
+		assertNotEquals("Not a KeyAction", a);
+		assertNotEquals(a, new KeyUp(VK_ALT));
+		assertNotEquals(a, new KeyDown(VK_CONTROL));
+		assertEquals(a, new KeyUp(VK_CONTROL));
 	}
 
 }

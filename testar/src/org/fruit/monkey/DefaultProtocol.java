@@ -31,6 +31,7 @@
 
 package org.fruit.monkey;
 
+import static java.awt.event.KeyEvent.VK_ESCAPE;
 import static org.fruit.alayer.Tags.ActionDelay;
 import static org.fruit.alayer.Tags.ActionDuration;
 import static org.fruit.alayer.Tags.ActionSet;
@@ -72,7 +73,6 @@ import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.actions.*;
 import org.fruit.alayer.devices.AWTMouse;
-import org.fruit.alayer.devices.KBKeys;
 import org.fruit.alayer.devices.Mouse;
 import org.fruit.alayer.devices.MouseButtons;
 import org.fruit.alayer.exceptions.ActionBuildException;
@@ -803,7 +803,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 				// THERE MUST ALMOST BE ONE ACTION!
 				//----------------------------------
 				// if we did not find any actions, then we just hit escape, maybe that works ;-)
-				Action escAction = new AnnotatingActionCompiler().hitKey(KBKeys.VK_ESCAPE);
+				Action escAction = new AnnotatingActionCompiler().hitKey(VK_ESCAPE);
 				CodingManager.buildEnvironmentActionIDs(state, escAction);
 				actions.add(escAction);
 				escAttempts++;
@@ -947,48 +947,48 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 				LogSerialiser.LogLevel.Info);
 	}
 
-	/**
-	 * Method to run TESTAR on Spy Mode.
-	 */
-	protected void runSpyLoop() {
+    /**
+     * Method to run TESTAR on Spy Mode.
+     */
+    protected void runSpyLoop() {
 
-		//Create or detect the SUT & build canvas representation
-		SUT system = startSystem();
-		this.cv = buildCanvas();
+        //Create or detect the SUT & build canvas representation
+        SUT system = startSystem();
+        this.cv = buildCanvas();
 
-		while(mode() == Modes.Spy && system.isRunning()) {
+        while(mode() == Modes.Spy && system.isRunning()) {
 
 			State state = getState(system);
 
-			cv.begin(); Util.clear(cv);
+            cv.begin(); Util.clear(cv);
 
-			//in Spy-mode, always visualize the widget info under the mouse cursor:
-			SutVisualization.visualizeState(visualizationOn, markParentWidget, mouse, protocolUtil, lastPrintParentsOf, cv,state);
+            //in Spy-mode, always visualize the widget info under the mouse cursor:
+            SutVisualization.visualizeState(visualizationOn, markParentWidget, mouse, protocolUtil, lastPrintParentsOf, cv,state);
 
-			Set<Action> actions = deriveActions(system,state);
-			CodingManager.buildIDs(state, actions);
+            Set<Action> actions = deriveActions(system,state);
+            CodingManager.buildIDs(state, actions);
 
-			//in Spy-mode, always visualize the green dots:
-			visualizeActions(cv, state, actions);
-			cv.end();
+            //in Spy-mode, always visualize the green dots:
+            visualizeActions(cv, state, actions);
+            cv.end();
 
-			//TODO: Prepare Spy Mode refresh time on settings file
-			//Wait 500ms to show the actions
-			synchronized (this) {
-				try {
-					this.wait(500);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+            //TODO: Prepare Spy Mode refresh time on settings file
+            //Wait 500ms to show the actions
+            synchronized (this) {
+                try {
+                    this.wait(500);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
 
-		}
+        }
 
-		//If user closes the SUT while in Spy-mode, TESTAR will close (or go back to SettingsDialog):
-		if(!system.isRunning()){
-			this.mode = Modes.Quit;
-		}
+        //If user closes the SUT while in Spy-mode, TESTAR will close (or go back to SettingsDialog):
+        if(!system.isRunning()){
+            this.mode = Modes.Quit;
+        }
 
 		Util.clear(cv);
 		cv.end();
@@ -1019,25 +1019,25 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 
 			preSequencePreparations();
 
-			system = startSystem();
-			startedRecordMode = true;
-			this.cv = buildCanvas();
-			actionCount = 1;
+            system = startSystem();
+            startedRecordMode = true;
+            this.cv = buildCanvas();
+            actionCount = 1;
 
-			//Reset LogSerialiser
-			LogSerialiser.finish();
-			LogSerialiser.exit();
+            //Reset LogSerialiser
+            LogSerialiser.finish();
+            LogSerialiser.exit();
 
-			//Generating the sequence file that can be replayed:
-			generatedSequence = getAndStoreGeneratedSequence();
-			currentSeq = getAndStoreSequenceFile();
+            //Generating the sequence file that can be replayed:
+            generatedSequence = getAndStoreGeneratedSequence();
+            currentSeq = getAndStoreSequenceFile();
 
-			//Activate process Listeners if enabled in the test.settings
-			if(enabledProcessListener)
-				processListener.startListeners(system, settings);
+            //Activate process Listeners if enabled in the test.settings
+            if(enabledProcessListener)
+                processListener.startListeners(system, settings);
 
-			//initializing fragment for recording replayable test sequence:
-			initFragmentForReplayableSequence(getState(system));
+            //initializing fragment for recording replayable test sequence:
+            initFragmentForReplayableSequence(getState(system));
 
 			// notify the statemodelmanager
 			stateModelManager.notifyTestSequencedStarted();
@@ -1066,7 +1066,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 				// THERE MUST ALMOST BE ONE ACTION!
 				//----------------------------------
 				// if we did not find any actions, then we just hit escape, maybe that works ;-)
-				Action escAction = new AnnotatingActionCompiler().hitKey(KBKeys.VK_ESCAPE);
+				Action escAction = new AnnotatingActionCompiler().hitKey(VK_ESCAPE);
 				CodingManager.buildEnvironmentActionIDs(state, escAction);
 				actions.add(escAction);
 				escAttempts++;
@@ -1687,7 +1687,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 		else if (this.forceNextActionESC){
 			System.out.println("DEBUG: Forcing ESC action in preActionSelection");
 			LogSerialiser.log("Forcing ESC action\n", LogSerialiser.LogLevel.Info);
-			Action a = new AnnotatingActionCompiler().hitKey(KBKeys.VK_ESCAPE);
+			Action a = new AnnotatingActionCompiler().hitKey(VK_ESCAPE);
 			CodingManager.buildEnvironmentActionIDs(state, a);
 			this.forceNextActionESC = false;
 			return a;
@@ -1871,8 +1871,8 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 				System.out.println("Mapping user event ... widget not found @(" + x + "," + y + ")");
 				return null;
 			}
-		} else if (userEvent[0] instanceof KBKeys) // key events
-			return (new AnnotatingActionCompiler()).hitKey((KBKeys)userEvent[0]);
+		} else if (userEvent[0] instanceof Integer) // key events
+			return (new AnnotatingActionCompiler()).hitKey((int)userEvent[0]);
 		else if (userEvent[0] instanceof String){ // type events
 			if (lastExecutedAction == null)
 				return null;

@@ -1,32 +1,32 @@
 /***************************************************************************************************
-*
-* Copyright (c) 2013, 2014, 2015, 2016, 2017 Universitat Politecnica de Valencia - www.upv.es
-* Copyright (c) 2019 Open Universiteit - www.ou.nl
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-* this list of conditions and the following disclaimer.
-* 2. Redistributions in binary form must reproduce the above copyright
-* notice, this list of conditions and the following disclaimer in the
-* documentation and/or other materials provided with the distribution.
-* 3. Neither the name of the copyright holder nor the names of its
-* contributors may be used to endorse or promote products derived from
-* this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-* LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-* POSSIBILITY OF SUCH DAMAGE.
-*******************************************************************************************************/
+ *
+ * Copyright (c) 2013 - 2020 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2018 - 2020 Open Universiteit - www.ou.nl
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************************************/
 
 
 package org.fruit.alayer.actions;
@@ -45,8 +45,12 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.WidgetPosition;
 import org.fruit.alayer.actions.CompoundAction.Builder;
-import org.fruit.alayer.devices.KBKeys;
 import org.fruit.alayer.devices.MouseButtons;
+
+import static java.awt.event.KeyEvent.VK_A;
+import static java.awt.event.KeyEvent.VK_CONTROL;
+import static java.awt.event.KeyEvent.VK_END;
+import static java.awt.event.KeyEvent.VK_RIGHT;
 
 public class StdActionCompiler {
 	Abstractor abstractor;
@@ -191,7 +195,7 @@ public class StdActionCompiler {
 		Assert.notNull(position);
 		
 		return new CompoundAction.Builder().add(new MouseMove(position), 1)
-				.add(LMouseDown, 0).add(LMouseUp, 0).add(NOP, 0.2).add(new KeyDown(KBKeys.VK_RIGHT),0).build();
+				.add(LMouseDown, 0).add(LMouseUp, 0).add(NOP, 0.2).add(new KeyDown(VK_RIGHT),0).build();
 	}
 	
 	public Action dropDownAt(double absX, double absY){
@@ -278,19 +282,19 @@ public class StdActionCompiler {
 		// clicking the widget to select it:
 		Builder builder = new CompoundAction.Builder().add(leftClickAt(position), 1);
 		// pressing Cntr + A keys to select all text:
-		builder.add(new KeyDown(KBKeys.VK_CONTROL), 0.1).add(new KeyDown(KBKeys.VK_A), 0.1).add(new KeyUp(KBKeys.VK_A), 0.1).add(new KeyUp(KBKeys.VK_CONTROL), 0.1);
+		builder.add(new KeyDown(VK_CONTROL), 0.1).add(new KeyDown(VK_A), 0.1).add(new KeyUp(VK_A), 0.1).add(new KeyUp(VK_CONTROL), 0.1);
 		/*
 		// old text replacements by pressing delete multiple times:
 		final int TEXT_REMOVE_TRIES = 16; // VK_BACK_SPACE @web applications => back-history issue (pressing BACKSPACE) <- when? typing outside text-boxes
 		//Toolkit.getDefaultToolkit().setLockingKeyState(KeyEvent.VK_NUM_LOCK, false); // VK_SHIFT bug fix (did not work)
 		Builder builder = new CompoundAction.Builder()
 				.add(leftClickAt(position), 1)
-				//.add(new KeyDown(KBKeys.VK_END), 1).add(new KeyUp(KBKeys.VK_END), 1)
-				//.add(new KeyDown(KBKeys.VK_SHIFT), 1)
-				.add(new KeyDown(KBKeys.VK_HOME), 1).add(new KeyUp(KBKeys.VK_HOME), 1);
-		//.add(new KeyUp(KBKeys.VK_SHIFT), 1);
+				//.add(new KeyDown(new KBKeys(VK_END), 1).add(new KeyUp(new KBKeys(VK_END), 1)
+				//.add(new KeyDown(new KBKeys(VK_SHIFT), 1)
+				.add(new KeyDown(new KBKeys(VK_HOME), 1).add(new KeyUp(new KBKeys(VK_HOME), 1);
+		//.add(new KeyUp(new KBKeys(VK_SHIFT), 1);
 		for ( int i=0; i<TEXT_REMOVE_TRIES; i++)
-			builder.add(new KeyDown(KBKeys.VK_DELETE), 1).add(new KeyUp(KBKeys.VK_DELETE), 1);
+			builder.add(new KeyDown(new KBKeys(VK_DELETE), 1).add(new KeyUp(new KBKeys(VK_DELETE), 1);
 		*/
 		// Typing the new text:
 		builder.add(new Type(text), 1);
@@ -302,18 +306,65 @@ public class StdActionCompiler {
 		// clicking the widget to select it:
 		Builder builder = new CompoundAction.Builder().add(leftClickAt(position), 1);
 		// pressing End key to append into the end of the text:
-		builder.add(new KeyDown(KBKeys.VK_END), 0.1).add(new KeyUp(KBKeys.VK_END), 0.1);
+		builder.add(new KeyDown(VK_END), 0.1).add(new KeyUp(VK_END), 0.1);
 		//inserting text:
 		builder.add(new Type(text), 1);
 		return builder.build();
 	}
+	
+	/**
+	 *
+	 * @param w, widget that allows inserting text
+	 * @param text, text to be pasted
+	 * @param replaceText, true = replace, false = append
+	 * @return Action that paste text into the widget
+	 */
+	public Action pasteTextInto(Widget w, String text, boolean replaceText){
+		return pasteTextInto(w, 0.5, 0.5, text, replaceText);
+	}
 
-	public Action hitKey(KBKeys key) {
+	public Action pasteTextInto(Widget w, double relX, double relY, String text, boolean replaceText){
+		Finder wf = abstractor.apply(w);
+		Action ret = null;
+		if(replaceText){
+			ret = pasteAndReplaceText(new WidgetPosition(wf, Tags.Shape, relX, relY, true), text);
+		}else{
+			ret = pasteAndAppendText(new WidgetPosition(wf, Tags.Shape, relX, relY, true), text);
+		}
+		ret.set(Tags.Targets, Util.newArrayList(wf));
+		ret.set(Tags.TargetID, w.get(Tags.ConcreteID));
+		ret.set(Tags.OriginWidget, w);
+		return ret;
+	}
+
+	public Action pasteAndReplaceText(final Position position, final String text){
+		Assert.notNull(position, text);
+		// clicking the widget to select it:
+		Builder builder = new CompoundAction.Builder().add(leftClickAt(position), 1);
+		// pressing Cntr + A keys to select all text:
+		builder.add(new KeyDown(VK_CONTROL), 0.1).add(new KeyDown(VK_A), 0.1).add(new KeyUp(VK_A), 0.1).add(new KeyUp(VK_CONTROL), 0.1);
+
+		builder.add(new PasteText(text), 1);
+		return builder.build();
+	}
+
+	public Action pasteAndAppendText(final Position position, final String text){
+		Assert.notNull(position, text);
+		// clicking the widget to select it:
+		Builder builder = new CompoundAction.Builder().add(leftClickAt(position), 1);
+		// pressing End key to append into the end of the text:
+		builder.add(new KeyDown(VK_END), 0.1).add(new KeyUp(VK_END), 0.1);
+
+		builder.add(new PasteText(text), 1);
+		return builder.build();
+	}
+
+	public Action hitKey(int key) {
 		return new CompoundAction.Builder().add(new KeyDown(key), .0)
 				.add(new KeyUp(key), 1.0).add(NOP, 1.0).build();
 	}
 	
-	public Action hitShortcutKey(List<KBKeys> keys) {
+	public Action hitShortcutKey(List<Integer> keys) {
 		if (keys.size() == 1) // single key
 			return hitKey(keys.get(0));
 		CompoundAction.Builder builder = new CompoundAction.Builder();

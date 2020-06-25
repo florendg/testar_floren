@@ -44,15 +44,19 @@ import org.fruit.alayer.Widget;
 import org.fruit.alayer.actions.AnnotatingActionCompiler;
 import org.fruit.alayer.actions.CompoundAction;
 import org.fruit.alayer.actions.KeyDown;
+import org.fruit.alayer.actions.PasteText;
 import org.fruit.alayer.actions.StdActionCompiler;
 import org.fruit.alayer.actions.Type;
 import org.fruit.alayer.devices.AWTKeyboard;
-import org.fruit.alayer.devices.KBKeys;
 import org.fruit.alayer.devices.Keyboard;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.alayer.Tags;
 import es.upv.staq.testar.NativeLinker;
 import org.testar.protocols.DesktopProtocol;
+
+import static java.awt.event.KeyEvent.VK_2;
+import static java.awt.event.KeyEvent.VK_SHIFT;
+import static java.awt.event.KeyEvent.VK_ENTER;
 import static org.fruit.alayer.Tags.Blocked;
 import static org.fruit.alayer.Tags.Title;
 import static org.fruit.alayer.Tags.Enabled;
@@ -69,7 +73,7 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 	static final int BROWSER_FIREFOX = 2;
 	static int browser; // BROWSER_*
 	static Role webController, webText; // browser dependent
-	static double browser_toolbar_filter;	
+	static double browser_toolbar_filter;
 
 	// check browser
 	private void initBrowser(){
@@ -102,7 +106,7 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 		Keyboard kb = AWTKeyboard.build();
 
 		/**
-		 * START Option 1: 
+		 * START Option 1:
 		 * read the widgets of the current state and execute action based on them
 		 */
 		/*state = getState(system);
@@ -110,17 +114,8 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 		for(Widget w :state) {
 			if(w.get(Tags.Title,"").contains("Email, phone, or Skype")) {
 				StdActionCompiler ac = new AnnotatingActionCompiler();
-				Action a = ac.clickTypeInto(w, "testarhandson", true);
+				Action a = ac.pasteTextInto(w, "testarhandson@gmail.com", true);
 				executeAction(system, state, a);
-
-				//Based on ENG Keyboard, Shift + 2 typing arroba character
-				kb.press(KBKeys.VK_SHIFT);
-				kb.press(KBKeys.VK_2);
-				kb.release(KBKeys.VK_2);
-				kb.release(KBKeys.VK_SHIFT);
-
-				executeAction(system, state, ac.clickTypeInto(w, "gmail.com", false));
-
 			}
 		}
 
@@ -145,7 +140,7 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 				Role role = w.get(Tags.Role, Roles.Widget);
 				if(Role.isOneOf(role, new Role[]{NativeLinker.getNativeRole("UIAEdit")})) {
 					StdActionCompiler ac = new AnnotatingActionCompiler();
-					executeAction(system, state, ac.clickTypeInto(w, "0neDrivetestar", true));
+					executeAction(system, state, ac.pasteTextInto(w, "0neDrivetestar", true));
 				}
 			}
 		}
@@ -173,24 +168,15 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 		 *  Work doing keyboard actions, without check the state and widgets
 		 */
 		new CompoundAction.Builder()   
-		.add(new Type("testarhandson"),0.5).build() //assume keyboard focus is on the user field   
-		.run(system, null, 0.5);
-
-		kb.press(KBKeys.VK_SHIFT);
-		kb.press(KBKeys.VK_2);
-		kb.release(KBKeys.VK_2);
-		kb.release(KBKeys.VK_SHIFT);
-
-		new CompoundAction.Builder()  
-		.add(new Type("gmail.com"),0.5)
-		.add(new KeyDown(KBKeys.VK_ENTER),0.5).build()
+		.add(new PasteText("testarhandson@gmail.com"),0.5) //assume keyboard focus is on the user field   
+		.add(new KeyDown(VK_ENTER),0.5).build()
 		.run(system, null, 1);
 
 		Util.pause(8);
 
 		new CompoundAction.Builder()
-		.add(new Type("0neDrivetestar"),0.5)   
-		.add(new KeyDown(KBKeys.VK_ENTER),0.5).build() //assume login is performed by ENTER 
+		.add(new PasteText("0neDrivetestar"),0.5)   
+		.add(new KeyDown(VK_ENTER),0.5).build() //assume login is performed by ENTER 
 		.run(system, null, 1);
 
 		//Wait a bit
@@ -235,8 +221,8 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 	/**
 	 * This method is called when TESTAR requests the state of the SUT.
 	 * Here you can add additional information to the SUT's state or write your
-	 * own state fetching routine. The state should have attached an oracle 
-	 * (TagName: <code>Tags.OracleVerdict</code>) which describes whether the 
+	 * own state fetching routine. The state should have attached an oracle
+	 * (TagName: <code>Tags.OracleVerdict</code>) which describes whether the
 	 * state is erroneous and if so why.
 	 * @return  the current state of the SUT with attached oracle.
 	 */
@@ -282,7 +268,7 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 			shape = w.get(Tags.Shape, null);
 
 			// Check that all images have an alternate textual description (accessibility, W3C WAI)
-			verdict = verdict.join(getW3CWAIVerdict(state, w, role, title));				
+			verdict = verdict.join(getW3CWAIVerdict(state, w, role, title));
 
 			// check for too small texts to be legible
 			verdict = verdict.join(getSmallTextVerdict(state, w, role, shape));
@@ -292,7 +278,7 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 
 		}
 
-		return verdict;		
+		return verdict;
 
 	}
 
@@ -310,7 +296,7 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 			return new Verdict(Verdict.SEVERITY_WARNING, "Not all texts have a size greater than " + MINIMUM_FONT_SIZE + "px",
 					new ShapeVisualizer(BluePen, w.get(Tags.Shape), "Too small text", 0.5, 0.5));
 		else
-			return Verdict.OK;	
+			return Verdict.OK;
 	}
 
 	private Verdict getScrollsUsabilityVerdict(State state, Widget w, Shape shape){
@@ -319,10 +305,10 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 			if (NativeLinker.getNativeBooleanProperty(w, "UIAIsScrollPatternAvailable")){
 				if (NativeLinker.getNativeBooleanProperty(w, "UIAVerticallyScrollable") && shape.height() < MINIMUM_SCROLLABLE_UISIZE)
 					return new Verdict(Verdict.SEVERITY_WARNING, "Not all vertical-scrollable UI elements are greater than " + MINIMUM_SCROLLABLE_UISIZE + "px",
-							new ShapeVisualizer(BluePen, w.get(Tags.Shape), "Too small vertical-scrollable UI element", 0.5, 0.5));												
+							new ShapeVisualizer(BluePen, w.get(Tags.Shape), "Too small vertical-scrollable UI element", 0.5, 0.5));
 				if (NativeLinker.getNativeBooleanProperty(w, "UIAHorizontallyScrollable") && shape.width() < MINIMUM_SCROLLABLE_UISIZE)
 					return new Verdict(Verdict.SEVERITY_WARNING, "Not all horizontal-scrollable UI elements are greater than " + MINIMUM_SCROLLABLE_UISIZE + "px",
-							new ShapeVisualizer(BluePen, w.get(Tags.Shape), "Too small horizontal-scrollable UI element", 0.5, 0.5));																			
+							new ShapeVisualizer(BluePen, w.get(Tags.Shape), "Too small horizontal-scrollable UI element", 0.5, 0.5));
 			}
 		} catch (NoSuchTagException nste) { return Verdict.OK; }
 		return Verdict.OK;
@@ -349,14 +335,14 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 
 		//----------------------
 		// BUILD CUSTOM ACTIONS
-		//----------------------		
+		//----------------------
 
 		// iterate through all widgets
 		for(Widget w : state){
 
 			if(w.get(Enabled, true) && !w.get(Blocked, false)){ // only consider enabled and non-blocked widgets
 
-				if (!blackListed(w)){  // do not build actions for tabu widgets  
+				if (!blackListed(w)){  // do not build actions for tabu widgets
 
 					// create left clicks
 					if(whiteListed(w) || isClickable(w))
@@ -390,9 +376,9 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 	private final int MAX_CLICKABLE_TITLE_LENGTH = 12;
 
 	@Override
-	protected boolean isClickable(Widget w){		
+	protected boolean isClickable(Widget w){
 		if (!isAtBrowserCanvas(w))
-			return false;	
+			return false;
 
 		String title = w.get(Title, "");
 		Role role = w.get(Tags.Role, Roles.Widget);
@@ -400,11 +386,11 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 			return super.isUnfiltered(w);
 		else
 			return super.isClickable(w);
-	} 	
+	}
 
 	private boolean isDoubleClickable(Widget w){
 		if (!isAtBrowserCanvas(w))
-			return false;	
+			return false;
 
 		if (isClickable(w)){
 			Widget wParent = w.parent();
@@ -416,12 +402,12 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 		}
 
 		return false;
-	}	
+	}
 
 	@Override
 	protected boolean isTypeable(Widget w){
 		if (!isAtBrowserCanvas(w))
-			return false;	
+			return false;
 
 		Role role = w.get(Tags.Role, null);
 		if (role != null && Role.isOneOf(role, webText))
@@ -435,7 +421,7 @@ public class Protocol_web_one_drive extends DesktopProtocol {
 		if (shape != null && shape.y() > browser_toolbar_filter)
 			return true;
 		else
-			return false;		
+			return false;
 	}
 
 }

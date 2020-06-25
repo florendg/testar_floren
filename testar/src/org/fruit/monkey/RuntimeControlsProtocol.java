@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2018 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2018 Open Universiteit - www.ou.nl
+ * Copyright (c) 2018, 2019 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2018, 2019 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,12 +35,18 @@ import es.upv.staq.testar.EventHandler;
 import es.upv.staq.testar.FlashFeedback;
 import es.upv.staq.testar.IEventListener;
 import es.upv.staq.testar.serialisation.LogSerialiser;
-import org.fruit.alayer.devices.KBKeys;
 import org.fruit.alayer.devices.MouseButtons;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
+
+import static org.jnativehook.keyboard.NativeKeyEvent.VC_0;
+import static org.jnativehook.keyboard.NativeKeyEvent.VC_ALT;
+import static org.jnativehook.keyboard.NativeKeyEvent.VC_DOWN;
+import static org.jnativehook.keyboard.NativeKeyEvent.VC_LEFT;
+import static org.jnativehook.keyboard.NativeKeyEvent.VC_RIGHT;
+import static org.jnativehook.keyboard.NativeKeyEvent.VC_SHIFT;
+import static org.jnativehook.keyboard.NativeKeyEvent.VC_SPACE;
+import static org.jnativehook.keyboard.NativeKeyEvent.VC_UP;
 
 
 public abstract class RuntimeControlsProtocol extends AbstractProtocol implements IEventListener {
@@ -62,7 +68,7 @@ public abstract class RuntimeControlsProtocol extends AbstractProtocol implement
     }
 
     protected Modes mode;
-    private Set<KBKeys> pressed = EnumSet.noneOf(KBKeys.class);
+    private Set<Integer> pressedKeyCodes = new HashSet<>();
 
     public EventHandler initializeEventHandler() {
     	return new EventHandler(this);
@@ -73,7 +79,6 @@ public abstract class RuntimeControlsProtocol extends AbstractProtocol implement
     /**
      * Implement the SHIFT + ARROW-LEFT or SHIFT + ARROW-RIGHT toggling mode feature
      * Show the flashfeedback in the upperleft corner of the screen
-     * @param forward is set in keyDown method
      */
     private synchronized void nextMode() {
     	switch(mode){
@@ -94,41 +99,8 @@ public abstract class RuntimeControlsProtocol extends AbstractProtocol implement
     	String modeNfo = "'" + mode + "' mode active." + modeParamS;
     	LogSerialiser.log(modeNfo + "\n", LogSerialiser.LogLevel.Info);
     	FlashFeedback.flash(modeNfo, 1000);
-    	
+
     }
-    
-    //Old code to switch between modes
-    /*private synchronized void nextMode(boolean forward){
-        if(forward){
-            switch(mode){
-                case Record:
-                    mode = Modes.Generate; break;
-                case Generate:
-                    mode = Modes.Record; break;
-                default:
-                    break;
-            }
-        }else{
-            switch(mode){
-                case Record:
-                    mode = Modes.Generate; break;
-                case Generate:
-                    mode = Modes.Record; break;
-                default:
-                    break;
-            }
-        }
-
-        // Add some logging
-        // Add the FlashFeedback about the mode you are in in the upper left corner.
-        String modeParamS = "";
-        if (mode == Modes.Record)
-            modeParamS = " (" + settings.get(ConfigTags.TimeToWaitAfterAction) + " wait time between actions)";
-
-        String modeNfo = "'" + mode + "' mode active." + modeParamS;
-        LogSerialiser.log(modeNfo + "\n", LogSerialiser.LogLevel.Info);
-        FlashFeedback.flash(modeNfo);
-    }*/
 
     /**
      * Set the mode with the given parameter value
@@ -163,15 +135,14 @@ public abstract class RuntimeControlsProtocol extends AbstractProtocol implement
      * SHIFT + ARROW-DOWN
      * SHIFT + {0, 1, 2, 3, 4}
      * SHIFT + ALT
-     * @param key
+     * @param keyCode
      */
     @Override
-    public void keyDown(KBKeys key){
-        pressed.add(key);
-
+    public void keyDown(int keyCode) {
+        pressedKeyCodes.add(keyCode);
         //  SHIFT + SPACE are pressed --> Toggle slow motion test
-        if (pressed.contains(KBKeys.VK_SHIFT) && key == KBKeys.VK_SPACE){
-            if (this.delay == Double.MIN_VALUE){
+        if (pressedKeyCodes.contains(VC_SHIFT) && keyCode == VC_SPACE) {
+            if (this.delay == Double.MIN_VALUE) {
                 this.delay = settings().get(ConfigTags.TimeToWaitAfterAction).doubleValue();
                 settings().set(ConfigTags.TimeToWaitAfterAction, SLOW_MOTION);
             } else{
@@ -181,25 +152,25 @@ public abstract class RuntimeControlsProtocol extends AbstractProtocol implement
         }
 
             // SHIFT + ARROW-RIGHT --> go to the next mode
-        else if(key == KBKeys.VK_RIGHT && pressed.contains(KBKeys.VK_SHIFT)) {
+        else if(keyCode == VC_RIGHT && pressedKeyCodes.contains(VC_SHIFT)) {
             if(mode.equals(Modes.Record) || mode.equals(Modes.Generate))
             	nextMode();
         }
 
             // SHIFT + ARROW-LEFT --> go to the previous mode
-        else if(key == KBKeys.VK_LEFT && pressed.contains(KBKeys.VK_SHIFT)) {
+        else if(keyCode == VC_LEFT && pressedKeyCodes.contains(VC_SHIFT)) {
             if(mode.equals(Modes.Record) || mode.equals(Modes.Generate))
             	nextMode();
         }
 
             // SHIFT + ARROW-DOWN --> stop TESTAR run
-        else if(key == KBKeys.VK_DOWN && pressed.contains(KBKeys.VK_SHIFT)){
+        else if(keyCode == VC_DOWN && pressedKeyCodes.contains(VC_SHIFT)) {
             LogSerialiser.log("User requested to stop monkey!\n", LogSerialiser.LogLevel.Info);
             mode = Modes.Quit;
         }
 
         // SHIFT + ARROW-UP --> toggle visualization on / off
-        else if(key == KBKeys.VK_UP && pressed.contains(KBKeys.VK_SHIFT)){
+        else if(keyCode == VC_UP && pressedKeyCodes.contains(VC_SHIFT)) {
             if(visualizationOn){
                 visualizationOn = false;
             }else{
@@ -225,7 +196,7 @@ public abstract class RuntimeControlsProtocol extends AbstractProtocol implement
 //            settings().set(ConfigTags.DrawWidgetTree, !settings.get(ConfigTags.DrawWidgetTree));
 
             // SHIFT + 0 --> undocumented feature
-        else if (key == KBKeys.VK_0  && pressed.contains(KBKeys.VK_SHIFT))
+        else if (keyCode == VC_0 && pressedKeyCodes.contains(VC_SHIFT))
             System.setProperty("DEBUG_WINDOWS_PROCESS_NAMES","true");
 
             // TODO: Find out if this commented code is anything useful
@@ -239,20 +210,20 @@ public abstract class RuntimeControlsProtocol extends AbstractProtocol implement
             // This is because SHIFT is used for the TESTAR shortcuts
             // This is not ideal, because now special characters and capital letters and other events that needs SHIFT
             // cannot be recorded as an user event in GenerateManual....
-        else if (!pressed.contains(KBKeys.VK_SHIFT) && mode() == Modes.Record && userEvent == null){
+        else if (!pressedKeyCodes.contains(VC_SHIFT) && mode() == Modes.Record && userEvent == null) {
             //System.out.println("USER_EVENT key_down! " + key.toString());
-            userEvent = new Object[]{key}; // would be ideal to set it up at keyUp
+            userEvent = new Object[]{keyCode}; // would be ideal to set it up at keyUp
         }
 
         // SHIFT + ALT --> Toggle widget-tree hieracrhy display
-        if (pressed.contains(KBKeys.VK_ALT) && pressed.contains(KBKeys.VK_SHIFT))
+        if (pressedKeyCodes.contains(VC_ALT) && pressedKeyCodes.contains(VC_SHIFT))
             markParentWidget = !markParentWidget;
     }
 
     //jnativehook is platform independent
     @Override
-    public void keyUp(KBKeys key){
-        pressed.remove(key);
+    public void keyUp(int key){
+        pressedKeyCodes.remove(key);
     }
 
     /**

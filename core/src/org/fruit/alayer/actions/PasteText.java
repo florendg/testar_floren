@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2013 - 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2018 - 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,8 +31,14 @@
 
 package org.fruit.alayer.actions;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+
+import org.apache.commons.text.StringEscapeUtils;
 import org.fruit.Assert;
-import org.fruit.Util;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
@@ -41,66 +47,29 @@ import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
+public final class PasteText extends TaggableBase implements Action {
 
-import static java.awt.event.KeyEvent.VK_SHIFT;
-
-import java.awt.event.KeyEvent;
-
-/**
- * An action that types a given text on the StandardKeyboard of the SUT.
- */
-public final class Type extends TaggableBase implements Action {
-
-	private static final long serialVersionUID = 2555715152455716781L;
+	private static final long serialVersionUID = 1033277478070938602L;
 	private static final CharsetEncoder CharEncoder = Charset.forName("UTF-32").newEncoder();
 	private final String text;
 
-	public Type(String text){
+	public PasteText(String text) {
 		Assert.hasText(text);
 		checkEncoder(text);
 		this.text = text;
 	}
 
+	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		Assert.isTrue(duration >= 0);
 		Assert.notNull(system);
 
-		double d = duration / text.length();
+		StringSelection selection = new StringSelection(text);
 
-		Action shiftDown = new KeyDown(VK_SHIFT);
-		Action shiftUp = new KeyUp(VK_SHIFT);
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(selection, null);
 
-		for(int i = 0; i < text.length(); i++){
-
-			try {
-
-				char c = text.charAt(i);
-				boolean shift = false;
-
-				if(Character.isLetter(c)){
-					if(Character.isLowerCase(c))
-						c = Character.toUpperCase(c);
-					else
-						shift = true;
-				}
-
-				int key = KeyEvent.getExtendedKeyCodeForChar(c);
-
-				if (shift)
-					shiftDown.run(system, state, .0);
-				new KeyDown(key).run(system, state, .0);
-				new KeyUp(key).run(system, state, .0);
-				if (shift)
-					shiftUp.run(system, state, .0);
-				Util.pause(d);
-
-			} catch(IllegalArgumentException e) {
-				System.out.println("TESTAR support for better character encodings is being developed");
-				System.out.println(e.getMessage());
-			}
-		}
+		system.get(Tags.StandardKeyboard).paste();
 	}
 
 	public static void checkEncoder(String text) {
@@ -108,13 +77,13 @@ public final class Type extends TaggableBase implements Action {
 			throw new IllegalArgumentException("This string is not an ascii string!");
 	}
 
-	public String toString(){ return "Type text '" + text + "'"; }
+	public String toString(){ return "Pasted text '" + StringEscapeUtils.escapeHtml4(text) + "'"; }
 
 	@Override
 	public String toString(Role... discardParameters) {
 		for (Role r : discardParameters){
 			if (r.name().equals(ActionRoles.Type.name()))
-				return "Text typed";
+				return "Text pasted";
 		}
 		return toString();
 	}	

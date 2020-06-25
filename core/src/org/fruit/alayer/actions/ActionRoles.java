@@ -1,6 +1,7 @@
 /***************************************************************************************************
 *
-* Copyright (c) 2013, 2014, 2015, 2016, 2017 Universitat Politecnica de Valencia - www.upv.es
+* Copyright (c) 2013 - 2020 Universitat Politecnica de Valencia - www.upv.es
+* Copyright (c) 2018 - 2020 Open Universiteit - www.ou.nl
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -64,8 +65,10 @@ public final class ActionRoles {
 	LDoubleClickAt = Role.from("LDoubleClickAt", DoubleClickAt, LeftClick),
 	RDoubleClickAt = Role.from("RDoubleClickAt", DoubleClickAt, RightClick),
 	Type = Role.from("Type", HitKey),
+	Paste = Role.from("Paste", HitKey),
 	ClickTypeInto = Role.from("ClickTypeInto", ClickAt, Type),
-	DropDown = Role.from("DropDown", Click, KeyDown), // /by mimarmu1
+	DropDown = Role.from("DropDown", Click, KeyDown),
+	PasteTextInto = Role.from("PasteTextInto", ClickAt, Paste),
 	Drag = Role.from("Drag", MouseDown, MouseUp, MouseMove),
 	LeftDrag = Role.from("LeftDrag", Drag);
 }

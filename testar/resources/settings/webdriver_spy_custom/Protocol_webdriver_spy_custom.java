@@ -34,7 +34,6 @@ import org.fruit.Pair;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.actions.*;
-import org.fruit.alayer.devices.KBKeys;
 import org.fruit.alayer.exceptions.ActionBuildException;
 import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.alayer.exceptions.SystemStartException;
@@ -56,6 +55,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
+
+import static org.jnativehook.keyboard.NativeKeyEvent.VC_RIGHT;
+import static org.jnativehook.keyboard.NativeKeyEvent.VC_LEFT;
 
 import static org.fruit.alayer.Tags.Blocked;
 import static org.fruit.alayer.Tags.Enabled;
@@ -482,10 +484,10 @@ public class Protocol_webdriver_spy_custom extends WebdriverProtocol {
 	 * @param key
 	 */
 	@Override
-	public void keyDown(KBKeys key) {    	
+	public void keyDown(int key) {    	
 		super.keyDown(key);        
 		if (mode() == Modes.Spy){ 
-			if (key == KBKeys.VK_RIGHT) {
+			if (key == VC_RIGHT) {
 				try {
 
 					Widget w = Util.widgetFromPoint(latestState, mouse.cursor().x(), mouse.cursor().y());
@@ -501,7 +503,7 @@ public class Protocol_webdriver_spy_custom extends WebdriverProtocol {
 				}
 			}
 
-			if (key == KBKeys.VK_LEFT) {
+			if (key == VC_LEFT) {
 				try {
 					Widget w = Util.widgetFromPoint(latestState, mouse.cursor().x(), mouse.cursor().y());
 

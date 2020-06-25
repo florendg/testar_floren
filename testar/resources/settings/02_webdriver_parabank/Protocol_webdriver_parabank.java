@@ -132,7 +132,16 @@ public class Protocol_webdriver_parabank extends WebdriverProtocol {
     waitLeftClickAndTypeIntoWidgetWithMatchingTag(WdTags.WebName,"password", "demo", state, system, 5,1.0);
 
     waitAndLeftClickWidgetWithMatchingTag(WdTags.WebValue, "Log In", state, system, 5, 1.0);
-*/
+    */
+	  
+	/*
+	 * If you have issues typing special characters
+	 * 
+	 * Try to use Paste Action with method:
+	 * waitLeftClickAndPasteIntoWidgetWithMatchingTag
+	 */
+
+	// waitLeftClickAndPasteIntoWidgetWithMatchingTag(WdTags.WebName, "username", "john", state, system, 5,1.0);
   }
 
   /**
