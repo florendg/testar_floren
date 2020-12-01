@@ -29,7 +29,6 @@
  *******************************************************************************************************/
 
 
-
 package org.fruit.monkey;
 
 import es.upv.staq.testar.CodingManager;
@@ -39,124 +38,144 @@ import es.upv.staq.testar.StateManagementTags;
 import es.upv.staq.testar.serialisation.LogSerialiser;
 import es.upv.staq.testar.serialisation.ScreenshotSerialiser;
 import es.upv.staq.testar.serialisation.TestSerialiser;
-import org.fruit.*;
+import nl.ou.testar.TagVisualization.ConcreteTagFilter;
+import nl.ou.testar.TagVisualization.TagFilter;
+import org.fruit.Assert;
+import org.fruit.Environment;
+import org.fruit.Pair;
+import org.fruit.UnProc;
+import org.fruit.UnknownEnvironment;
+import org.fruit.Util;
 import org.fruit.alayer.Tag;
+import org.fruit.alayer.windows.Windows10;
 
 import javax.swing.*;
-import java.io.*;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
-import org.fruit.alayer.windows.Windows10;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
 
 import static org.fruit.Util.compileProtocol;
 import static org.fruit.monkey.ConfigTags.*;
 
 public class Main {
 
-	//public static final String TESTAR_DIR_PROPERTY = "DIRNAME"; //Use the OS environment to obtain TESTAR directory
-	public static final String SETTINGS_FILE = "test.settings";
-	public static final String SUT_SETTINGS_EXT = ".sse";
-	public static String SSE_ACTIVATED = null;
+    //public static final String TESTAR_DIR_PROPERTY = "DIRNAME"; //Use the OS environment to obtain TESTAR directory
+    public static final String SETTINGS_FILE = "test.settings";
+    public static final String SUT_SETTINGS_EXT = ".sse";
+    public static String SSE_ACTIVATED = null;
 
-	//Default paths
-	public static String testarDir = "." + File.separator;
-	public static String settingsDir = testarDir + "settings" + File.separator;
-	public static String outputDir = testarDir + "output" + File.separator;
-	public static String tempDir = outputDir + "temp" + File.separator;
+    //Default paths
+    public static String testarDir = "." + File.separator;
+    public static String settingsDir = testarDir + "settings" + File.separator;
+    public static String outputDir = testarDir + "output" + File.separator;
+    public static String tempDir = outputDir + "temp" + File.separator;
 
 
-	/**
-	 * This method scans the settings directory of TESTAR for a file that end with extension SUT_SETTINGS_EXT
-	 * @return A list of file names that have extension SUT_SETTINGS_EXT
-	 */
-	public static String[] getSSE() {
-		return new File(settingsDir).list(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith(SUT_SETTINGS_EXT);
-			}
-		});
-	}
+    /**
+     * This method scans the settings directory of TESTAR for a file that end with extension SUT_SETTINGS_EXT
+     *
+     * @return A list of file names that have extension SUT_SETTINGS_EXT
+     */
+    public static String[] getSSE() {
+        return new File(settingsDir).list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(SUT_SETTINGS_EXT);
+            }
+        });
+    }
 
-	/**
-	 * According to the TESTAR directory and SSE file (settings and protocol to run)
-	 * return the path of the selected settings
-	 * 
-	 * @return test.settings path
-	 */
-	public static String getTestSettingsFile() {
-		return settingsDir + SSE_ACTIVATED + File.separator + SETTINGS_FILE;
-	}
+    /**
+     * According to the TESTAR directory and SSE file (settings and protocol to run)
+     * return the path of the selected settings
+     *
+     * @return test.settings path
+     */
+    public static String getTestSettingsFile() {
+        return settingsDir + SSE_ACTIVATED + File.separator + SETTINGS_FILE;
+    }
 
-	/**
-	 * Main method to run TESTAR
-	 * 
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
+    /**
+     * Main method to run TESTAR
+     *
+     * @param args
+     * @throws IOException
+     */
+    public static void main(String[] args) throws IOException {
 
-		isValidJavaEnvironment();
-		
-		verifyTestarInitialDirectory();
+        isValidJavaEnvironment();
 
-		initTestarSSE(args);
+        verifyTestarInitialDirectory();
 
-		String testSettingsFileName = getTestSettingsFile();
-		System.out.println("Test settings is <" + testSettingsFileName + ">");
+        initTagVisualization();
 
-		Settings settings = loadTestarSettings(args, testSettingsFileName);
+        initTestarSSE(args);
 
-		// Continuous Integration: If GUI is disabled TESTAR was executed from command line.
-		// We only want to execute TESTAR one time with the selected settings.
-		if(!settings.get(ConfigTags.ShowVisualSettingsDialogOnStartup)){
+        String testSettingsFileName = getTestSettingsFile();
+        System.out.println("Test settings is <" + testSettingsFileName + ">");
 
-			setTestarDirectory(settings);
+        Settings settings = loadTestarSettings(args, testSettingsFileName);
 
-			initCodingManager(settings);
+        // Continuous Integration: If GUI is disabled TESTAR was executed from command line.
+        // We only want to execute TESTAR one time with the selected settings.
+        if (!settings.get(ConfigTags.ShowVisualSettingsDialogOnStartup)) {
 
-			initOperatingSystem();
+            setTestarDirectory(settings);
+
+            initCodingManager(settings);
+
+            initOperatingSystem();
 
 			startTestar(settings);
 		}
 
-		//TESTAR GUI is enabled, we're going to show again the GUI when the selected protocol execution finishes
-		else{
-			while(startTestarDialog(settings, testSettingsFileName)) {
+        //TESTAR GUI is enabled, we're going to show again the GUI when the selected protocol execution finishes
+        else {
+            while (startTestarDialog(settings, testSettingsFileName)) {
 
-				testSettingsFileName = getTestSettingsFile();
-				settings = loadTestarSettings(args, testSettingsFileName);
+                testSettingsFileName = getTestSettingsFile();
+                settings = loadTestarSettings(args, testSettingsFileName);
 
-				setTestarDirectory(settings);
+                setTestarDirectory(settings);
 
-				initCodingManager(settings);
+                initCodingManager(settings);
 
-				initOperatingSystem();
+                initOperatingSystem();
 
 				startTestar(settings);
 			}
 		}
 
-		TestSerialiser.exit();
-		ScreenshotSerialiser.exit();
-		LogSerialiser.exit();
+        TestSerialiser.exit();
+        ScreenshotSerialiser.exit();
+        LogSerialiser.exit();
 
-		System.exit(0);
+        System.exit(0);
 
-	}
+    }
 
-	private static boolean isValidJavaEnvironment() {
+    private static boolean isValidJavaEnvironment() {
 
-		try {
-			if(!System.getenv("JAVA_HOME").contains("jdk"))
-				System.out.println("JAVA HOME is not properly aiming to the Java Development Kit");
+        try {
+            if (!System.getenv("JAVA_HOME").contains("jdk"))
+                System.out.println("JAVA HOME is not properly aiming to the Java Development Kit");
 
-			if(!(System.getenv("JAVA_HOME").contains("1.8") || (System.getenv("JAVA_HOME").contains("-8"))))
-				System.out.println("Java version is not JDK 1.8, please install ");
-		}catch(Exception e) {System.out.println("Exception: Something is wrong with your JAVA_HOME \n"
-				+"Check if JAVA_HOME system variable is correctly defined \n \n"
-				+"GO TO: https://testar.org/faq/ to obtain more details \n \n");}
+            if (!(System.getenv("JAVA_HOME").contains("1.8") || (System.getenv("JAVA_HOME").contains("-8"))))
+                System.out.println("Java version is not JDK 1.8, please install ");
+        } catch (Exception e) {
+            System.out.println("Exception: Something is wrong with your JAVA_HOME \n"
+                    + "Check if JAVA_HOME system variable is correctly defined \n \n"
+                    + "GO TO: https://testar.org/faq/ to obtain more details \n \n");
+        }
 
 		return true;
 	}
@@ -182,11 +201,11 @@ public class Main {
 		}
 	}
 
-	/**
-	 * Set the current directory of TESTAR, settings and output folders
-	 */
-	private static void setTestarDirectory(Settings settings) {
-		//Use the OS environment to obtain TESTAR directory
+    /**
+     * Set the current directory of TESTAR, settings and output folders
+     */
+    private static void setTestarDirectory(Settings settings) {
+        //Use the OS environment to obtain TESTAR directory
 		/*try {
 			testarDir = System.getenv(TESTAR_DIR_PROPERTY);
 		}catch (Exception e) {
@@ -195,146 +214,145 @@ public class Main {
 			System.out.println("Please execute TESTAR from their existing directory");
 		}*/
 
-		outputDir = settings.get(ConfigTags.OutputDir);
-		tempDir = settings.get(ConfigTags.TempDir);
-	}
+        outputDir = settings.get(ConfigTags.OutputDir);
+        tempDir = settings.get(ConfigTags.TempDir);
+    }
 
-	/**
-	 * Find or create the .sse file, to known with what settings and protocol start TESTAR
-	 * 
-	 * @param args
-	 */
-	private static void initTestarSSE(String[] args){
+    /**
+     * Find or create the .sse file, to known with what settings and protocol start TESTAR
+     *
+     * @param args
+     */
+    private static void initTestarSSE(String[] args) {
 
-		Locale.setDefault(Locale.ENGLISH);
+        Locale.setDefault(Locale.ENGLISH);
 
-		// TODO: put the code below into separate method/class
-		// Get the files with SUT_SETTINGS_EXT extension and check whether it is not empty
-		// and that there is exactly one.
+        // TODO: put the code below into separate method/class
+        // Get the files with SUT_SETTINGS_EXT extension and check whether it is not empty
+        // and that there is exactly one.
 
-		//Allow users to use command line to choose a protocol modifying sse file
-		for(String sett : args) {
-			if(sett.toString().contains("sse="))
-				try {
-					protocolFromCmd(sett);
-				}catch(Exception e) {System.out.println("Error trying to modify sse from command line");}
-		}
+        //Allow users to use command line to choose a protocol modifying sse file
+        for (String sett : args) {
+            if (sett.toString().contains("sse="))
+                try {
+                    protocolFromCmd(sett);
+                } catch (Exception e) {
+                    System.out.println("Error trying to modify sse from command line");
+                }
+        }
 
-		String[] files = getSSE();
+        String[] files = getSSE();
 
-		// If there is more than 1, then delete them all
-		if (files != null && files.length > 1) {
-			System.out.println("Too many *.sse files - exactly one expected!");
-			for (String f : files) {
-				System.out.println("Delete file <" + f + "> = " + new File(f).delete());
-			}
-			files = null;
-		}
+        // If there is more than 1, then delete them all
+        if (files != null && files.length > 1) {
+            System.out.println("Too many *.sse files - exactly one expected!");
+            for (String f : files) {
+                System.out.println("Delete file <" + f + "> = " + new File(f).delete());
+            }
+            files = null;
+        }
 
-		//If there is none, then start up a selection menu
-		if (files == null || files.length == 0) {
-			settingsSelection();
-			if (SSE_ACTIVATED == null) {
-				System.exit(-1);
-			}
-		}
-		else {
-			//Use the only file that was found
-			SSE_ACTIVATED = files[0].split(SUT_SETTINGS_EXT)[0];
-		}
-	}
+        //If there is none, then start up a selection menu
+        if (files == null || files.length == 0) {
+            settingsSelection();
+            if (SSE_ACTIVATED == null) {
+                System.exit(-1);
+            }
+        } else {
+            //Use the only file that was found
+            SSE_ACTIVATED = files[0].split(SUT_SETTINGS_EXT)[0];
+        }
+    }
 
-	/**
-	 *  This method creates the dropdown menu to select a protocol when TESTAR starts WITHOUT a .sse file
-	 */
-	private static void settingsSelection() {
+    /**
+     * This method creates the dropdown menu to select a protocol when TESTAR starts WITHOUT a .sse file
+     */
+    private static void settingsSelection() {
 
-		Set<String> sutSettings = new HashSet<String>();
-		for (File f : new File(settingsDir).listFiles()) {
-			if (new File(f.getPath() + File.separator + SETTINGS_FILE).exists()) {
-				sutSettings.add(f.getName());
-			}
-		}
+        Set<String> sutSettings = new HashSet<String>();
+        for (File f : new File(settingsDir).listFiles()) {
+            if (new File(f.getPath() + File.separator + SETTINGS_FILE).exists()) {
+                sutSettings.add(f.getName());
+            }
+        }
 
-		if (sutSettings.isEmpty()) {
-			System.out.println("No SUT settings found!");
-		}
+        if (sutSettings.isEmpty()) {
+            System.out.println("No SUT settings found!");
+        } else {
+            Object[] options = sutSettings.toArray();
+            Arrays.sort(options);
+            JFrame settingsSelectorDialog = new JFrame();
+            settingsSelectorDialog.setAlwaysOnTop(true);
+            String sseSelected = (String) JOptionPane.showInputDialog(settingsSelectorDialog,
+                    "Select the desired setting:", "TESTAR settings", JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 
-		else {
-			Object[] options = sutSettings.toArray();
-			Arrays.sort(options);
-			JFrame settingsSelectorDialog = new JFrame();
-			settingsSelectorDialog.setAlwaysOnTop(true);
-			String sseSelected = (String) JOptionPane.showInputDialog(settingsSelectorDialog,
-					"Select the desired setting:", "TESTAR settings", JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+            if (sseSelected == null) {
+                SSE_ACTIVATED = null;
+                return;
+            }
 
-			if (sseSelected == null) {
-				SSE_ACTIVATED = null;
-				return;
-			}
+            final String sseFile = sseSelected + SUT_SETTINGS_EXT;
 
-			final String sseFile = sseSelected + SUT_SETTINGS_EXT;
+            try {
+                File f = new File(settingsDir + File.separator + sseFile);
+                if (f.createNewFile()) {
+                    SSE_ACTIVATED = sseSelected;
+                    return;
+                }
+            } catch (IOException e) {
+                System.out.println("Exception creating <" + sseFile + "> file");
+            }
 
-			try {
-				File f = new File(settingsDir + File.separator + sseFile);
-				if (f.createNewFile()) {
-					SSE_ACTIVATED = sseSelected;
-					return;
-				}
-			} catch (IOException e) {
-				System.out.println("Exception creating <" + sseFile + "> file");
-			}
+        }
+        SSE_ACTIVATED = null;
+    }
 
-		}
-		SSE_ACTIVATED = null;
-	}
+    //TODO: After know what overrideWithUserProperties does, unify this method with loadSettings
 
-	//TODO: After know what overrideWithUserProperties does, unify this method with loadSettings
-	/**
-	 * Load the settings of the selected test.settings file
-	 * 
-	 * @param args
-	 * @param testSettingsFileName
-	 * @return settings
-	 */
-	private static Settings loadTestarSettings(String[] args, String testSettingsFileName){
+    /**
+     * Load the settings of the selected test.settings file
+     *
+     * @param args
+     * @param testSettingsFileName
+     * @return settings
+     */
+    private static Settings loadTestarSettings(String[] args, String testSettingsFileName) {
 
-		Settings settings = null;
-		try {
-			settings = loadSettings(args, testSettingsFileName);
-		} catch (ConfigException ce) {
-			LogSerialiser.log("There is an issue with the configuration file: " + ce.getMessage() + "\n", LogSerialiser.LogLevel.Critical);
-		}
+        Settings settings = null;
+        try {
+            settings = loadSettings(args, testSettingsFileName);
+        } catch (ConfigException ce) {
+            LogSerialiser.log("There is an issue with the configuration file: " + ce.getMessage() + "\n", LogSerialiser.LogLevel.Critical);
+        }
 
-		//TODO: Understand what this exactly does?
-		overrideWithUserProperties(settings);
-		Float SST = settings.get(ConfigTags.StateScreenshotSimilarityThreshold, null);
-		if (SST != null) {
-			System.setProperty("SCRSHOT_SIMILARITY_THRESHOLD", SST.toString());
-		}
+        //Override settings values using Java Parameters (Example: -Dtest="true")
+        overrideWithUserProperties(settings);
+        Float SST = settings.get(ConfigTags.StateScreenshotSimilarityThreshold, null);
+        if (SST != null) {
+            System.setProperty("SCRSHOT_SIMILARITY_THRESHOLD", SST.toString());
+        }
 
-		return settings;
-	}
+        return settings;
+    }
 
-	/**
-	 * Open TESTAR GUI to allow the users modify the settings and the protocol with which the want run TESTAR
-	 * 
-	 * @param settings
-	 * @param testSettingsFileName
-	 * @return true if users starts TESTAR, or false is users close TESTAR
-	 */
-	public static boolean startTestarDialog(Settings settings, String testSettingsFileName) {
-		// Start up the TESTAR Dialog
-		try {
-			if ((settings = new SettingsDialog().run(settings, testSettingsFileName)) == null) {
-				return false;
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return true;
-	}
+    /**
+     * Open TESTAR GUI to allow the users modify the settings and the protocol with which the want run TESTAR
+     *
+     * @param settings
+     * @param testSettingsFileName
+     * @return true if users starts TESTAR, or false is users close TESTAR
+     */
+    public static boolean startTestarDialog(Settings settings, String testSettingsFileName) {
+        // Start up the TESTAR Dialog
+        try {
+            if ((settings = new SettingsDialog().run(settings, testSettingsFileName)) == null) {
+                return false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
 
 	/**
 	 * Start TESTAR protocol with the selected settings
@@ -366,7 +384,7 @@ public class Main {
 			String pc = settings.get(ProtocolClass);
 			String protocolClass = pc.substring(pc.lastIndexOf('/')+1, pc.length());
 
-			LogSerialiser.log("Trying to load TESTAR protocol in class '" +protocolClass +
+			LogSerialiser.log("Trying to load TESTAR protocol in class '" + protocolClass +
 					"' with class path '" + Util.toString(cp) + "'\n", LogSerialiser.LogLevel.Debug);
 
 			@SuppressWarnings("unchecked")
@@ -523,164 +541,166 @@ public class Main {
 		}
 	}
 
-	/**
-	 * This method creates a sse file to change TESTAR protocol if sett param matches an existing protocol
-	 * @param sett
-	 * @throws IOException 
-	 */
-	public static void protocolFromCmd(String sett) throws IOException {
-		String sseName = sett.substring(sett.indexOf("=")+1);
-		boolean existSSE = false;
+    /**
+     * This method creates a sse file to change TESTAR protocol if sett param matches an existing protocol
+     *
+     * @param sett
+     * @throws IOException
+     */
+    public static void protocolFromCmd(String sett) throws IOException {
+        String sseName = sett.substring(sett.indexOf("=") + 1);
+        boolean existSSE = false;
 
-		//Check if choose protocol exist
-		for (File f : new File(settingsDir).listFiles()) {
-			if (new File(settingsDir + sseName + File.separator + SETTINGS_FILE).exists()) {
-				existSSE = true;
-				break;
-			}
-		}
+        //Check if choose protocol exist
+        for (File f : new File(settingsDir).listFiles()) {
+            if (new File(settingsDir + sseName + File.separator + SETTINGS_FILE).exists()) {
+                existSSE = true;
+                break;
+            }
+        }
 
-		//Command line protocol doesn't exist
-		if(!existSSE) {System.out.println("Protocol: "+sseName+" doesn't exist");}
+        //Command line protocol doesn't exist
+        if (!existSSE) {
+            System.out.println("Protocol: " + sseName + " doesn't exist");
+        } else {
+            //Obtain previous sse file and delete it (if exist)
+            String[] files = getSSE();
+            if (files != null) {
+                for (String f : files)
+                    new File(settingsDir + f).delete();
 
-		else{
-			//Obtain previous sse file and delete it (if exist)
-			String[] files = getSSE();
-			if (files != null) {
-				for (String f : files) 
-					new File(settingsDir+f).delete();
+            }
 
-			}
+            //Create the new sse file
+            String sseDir = settingsDir + sseName + SUT_SETTINGS_EXT;
+            File f = new File(sseDir);
+            if (!f.exists())
+                f.createNewFile();
 
-			//Create the new sse file
-			String sseDir = settingsDir + sseName + SUT_SETTINGS_EXT;
-			File f = new File(sseDir);
-			if(!f.exists())
-				f.createNewFile();
+            System.out.println("Protocol changed from command line to: " + sseName);
 
-			System.out.println("Protocol changed from command line to: "+sseName);
+        }
+    }
 
-		}
-	}
+    /**
+     * Override settings values using Java Parameters (Example: -Dtest="true")
+     *
+     * @param settings
+     */
+    private static void overrideWithUserProperties(Settings settings) {
+        String pS, p;
+        // headless mode
+        pS = ConfigTags.ShowVisualSettingsDialogOnStartup.name();
+        p = System.getProperty(pS, null);
+        if (p == null) {
+            p = System.getProperty("headless", null); // mnemonic
+        }
+        if (p != null) {
+            settings.set(ConfigTags.ShowVisualSettingsDialogOnStartup, !(new Boolean(p).booleanValue()));
+            LogSerialiser.log("Property <" + pS + "> overridden to <" + p + ">", LogSerialiser.LogLevel.Critical);
+        }
+        // TestGenerator
+        pS = ConfigTags.TestGenerator.name();
+        p = System.getProperty(pS, null);
+        if (p == null) {
+            p = System.getProperty("TG", null); // mnemonic
+        }
+        if (p != null) {
+            settings.set(ConfigTags.TestGenerator, p);
+            LogSerialiser.log("Property <" + pS + "> overridden to <" + p + ">", LogSerialiser.LogLevel.Critical);
+        }
+        // SequenceLength
+        pS = ConfigTags.SequenceLength.name();
+        p = System.getProperty(pS, null);
+        if (p == null) {
+            p = System.getProperty("SL", null); // mnemonic
+        }
+        if (p != null) {
+            try {
+                Integer sl = new Integer(p);
+                settings.set(ConfigTags.SequenceLength, sl);
+                LogSerialiser.log("Property <" + pS + "> overridden to <" + sl.toString() + ">", LogSerialiser.LogLevel.Critical);
+            } catch (NumberFormatException e) {
+                LogSerialiser.log("Property <" + pS + "> could not be set! (using default)", LogSerialiser.LogLevel.Critical);
+            }
+        }
+        // GraphResumingActivated
+        pS = ConfigTags.GraphResuming.name();
+        p = System.getProperty(pS, null);
+        if (p == null) {
+            p = System.getProperty("GRA", null); // mnemonic
+        }
+        if (p != null) {
+            settings.set(ConfigTags.GraphResuming, new Boolean(p).booleanValue());
+            LogSerialiser.log("Property <" + pS + "> overridden to <" + p + ">", LogSerialiser.LogLevel.Critical);
+        }
+        // ForceToSequenceLength
+        pS = ConfigTags.ForceToSequenceLength.name();
+        p = System.getProperty(pS, null);
+        if (p == null) {
+            p = System.getProperty("F2SL", null); // mnemonic
+        }
+        if (p != null) {
+            settings.set(ConfigTags.ForceToSequenceLength, new Boolean(p).booleanValue());
+            LogSerialiser.log("Property <" + pS + "> overridden to <" + p + ">", LogSerialiser.LogLevel.Critical);
+        }
+        // TypingTextsForExecutedAction
+        pS = ConfigTags.TypingTextsForExecutedAction.name();
+        p = System.getProperty(pS, null);
+        if (p == null) {
+            p = System.getProperty("TT", null); // mnemonic
+        }
+        if (p != null) {
+            try {
+                Integer tt = new Integer(p);
+                settings.set(ConfigTags.TypingTextsForExecutedAction, tt);
+                LogSerialiser.log("Property <" + pS + "> overridden to <" + tt.toString() + ">", LogSerialiser.LogLevel.Critical);
+            } catch (NumberFormatException e) {
+                LogSerialiser.log("Property <" + pS + "> could not be set! (using default)", LogSerialiser.LogLevel.Critical);
+            }
+        }
+        // StateScreenshotSimilarityThreshold
+        pS = ConfigTags.StateScreenshotSimilarityThreshold.name();
+        p = System.getProperty(pS, null);
+        if (p == null) {
+            p = System.getProperty("SST", null); // mnemonic
+        }
+        if (p != null) {
+            try {
+                Float sst = new Float(p);
+                settings.set(ConfigTags.StateScreenshotSimilarityThreshold, sst);
+                LogSerialiser.log("Property <" + pS + "> overridden to <" + sst.toString() + ">", LogSerialiser.LogLevel.Critical);
+            } catch (NumberFormatException e) {
+                LogSerialiser.log("Property <" + pS + "> could not be set! (using default)", LogSerialiser.LogLevel.Critical);
+            }
+        }
+        // UnattendedTests
+        pS = ConfigTags.UnattendedTests.name();
+        p = System.getProperty(pS, null);
+        if (p == null) {
+            p = System.getProperty("UT", null); // mnemonic
+        }
+        if (p != null) {
+            settings.set(ConfigTags.UnattendedTests, new Boolean(p).booleanValue());
+            LogSerialiser.log("Property <" + pS + "> overridden to <" + p + ">", LogSerialiser.LogLevel.Critical);
+        }
+    }
 
-	//TODO: Understand what this exactly does?
-	/**
-	 * Override something. Not sure what
-	 * @param settings
-	 */
-	private static void overrideWithUserProperties(Settings settings) {
-		String pS, p;
-		// headless mode
-		pS = ConfigTags.ShowVisualSettingsDialogOnStartup.name();
-		p = System.getProperty(pS, null);
-		if (p == null) {
-			p = System.getProperty("headless", null); // mnemonic
-		}
-		if (p != null) {
-			settings.set(ConfigTags.ShowVisualSettingsDialogOnStartup, !(new Boolean(p).booleanValue()));
-			LogSerialiser.log("Property <" + pS + "> overridden to <" + p + ">", LogSerialiser.LogLevel.Critical);
-		}
-		// TestGenerator
-		pS = ConfigTags.TestGenerator.name();
-		p = System.getProperty(pS, null);
-		if (p == null) {
-			p = System.getProperty("TG", null); // mnemonic
-		}
-		if (p != null) {
-			settings.set(ConfigTags.TestGenerator, p);
-			LogSerialiser.log("Property <" + pS + "> overridden to <" + p + ">", LogSerialiser.LogLevel.Critical);
-		}
-		// SequenceLength
-		pS = ConfigTags.SequenceLength.name();
-		p = System.getProperty(pS, null);
-		if (p == null) {
-			p = System.getProperty("SL", null); // mnemonic
-		}
-		if (p != null) {
-			try {
-				Integer sl = new Integer(p);
-				settings.set(ConfigTags.SequenceLength, sl);
-				LogSerialiser.log("Property <" + pS + "> overridden to <" + sl.toString() + ">", LogSerialiser.LogLevel.Critical);
-			} catch (NumberFormatException e) {
-				LogSerialiser.log("Property <" + pS + "> could not be set! (using default)", LogSerialiser.LogLevel.Critical);
-			}
-		}
-		// GraphResumingActivated
-		pS = ConfigTags.GraphResuming.name();
-		p = System.getProperty(pS, null);
-		if (p == null) {
-			p = System.getProperty("GRA", null); // mnemonic
-		}
-		if (p != null) {
-			settings.set(ConfigTags.GraphResuming, new Boolean(p).booleanValue());
-			LogSerialiser.log("Property <" + pS + "> overridden to <" + p + ">", LogSerialiser.LogLevel.Critical);
-		}
-		// ForceToSequenceLength
-		pS = ConfigTags.ForceToSequenceLength.name();
-		p = System.getProperty(pS, null);
-		if (p == null) {
-			p = System.getProperty("F2SL", null); // mnemonic
-		}
-		if (p != null) {
-			settings.set(ConfigTags.ForceToSequenceLength, new Boolean(p).booleanValue());
-			LogSerialiser.log("Property <" + pS + "> overridden to <" + p + ">", LogSerialiser.LogLevel.Critical);
-		}
-		// TypingTextsForExecutedAction
-		pS = ConfigTags.TypingTextsForExecutedAction.name();
-		p = System.getProperty(pS, null);
-		if (p == null) {
-			p = System.getProperty("TT", null); // mnemonic
-		}
-		if (p != null) {
-			try {
-				Integer tt = new Integer(p);
-				settings.set(ConfigTags.TypingTextsForExecutedAction, tt);
-				LogSerialiser.log("Property <" + pS + "> overridden to <" + tt.toString() + ">", LogSerialiser.LogLevel.Critical);
-			} catch (NumberFormatException e) {
-				LogSerialiser.log("Property <" + pS + "> could not be set! (using default)", LogSerialiser.LogLevel.Critical);
-			}
-		}
-		// StateScreenshotSimilarityThreshold
-		pS = ConfigTags.StateScreenshotSimilarityThreshold.name();
-		p = System.getProperty(pS, null);
-		if (p == null) {
-			p = System.getProperty("SST", null); // mnemonic
-		}
-		if (p != null) {
-			try {
-				Float sst = new Float(p);
-				settings.set(ConfigTags.StateScreenshotSimilarityThreshold, sst);
-				LogSerialiser.log("Property <" + pS + "> overridden to <" + sst.toString() + ">", LogSerialiser.LogLevel.Critical);
-			} catch (NumberFormatException e) {
-				LogSerialiser.log("Property <" + pS + "> could not be set! (using default)", LogSerialiser.LogLevel.Critical);
-			}
-		}
-		// UnattendedTests
-		pS = ConfigTags.UnattendedTests.name();
-		p = System.getProperty(pS, null);
-		if (p == null) {
-			p = System.getProperty("UT", null); // mnemonic
-		}
-		if (p != null) {
-			settings.set(ConfigTags.UnattendedTests, new Boolean(p).booleanValue());
-			LogSerialiser.log("Property <" + pS + "> overridden to <" + p + ">", LogSerialiser.LogLevel.Critical);
-		}
-	}
-
-	/**
-	 * This method initializes the coding manager with custom tags to use for constructing
-	 * concrete and abstract state ids, if provided of course.
-	 * @param settings
-	 */
-	private static void initCodingManager(Settings settings) {
-		// we look if there are user-provided custom state tags in the settings
-		// if so, we provide these to the coding manager
+    /**
+     * This method initializes the coding manager with custom tags to use for constructing
+     * concrete and abstract state ids, if provided of course.
+     *
+     * @param settings
+     */
+    private static void initCodingManager(Settings settings) {
+        // we look if there are user-provided custom state tags in the settings
+        // if so, we provide these to the coding manager
 
         Set<Tag<?>> stateManagementTags = StateManagementTags.getAllTags();
         // for the concrete state tags we use all the state management tags that are available
-		if (!stateManagementTags.isEmpty()) {
-			CodingManager.setCustomTagsForConcreteId(stateManagementTags.toArray(new Tag<?>[0]));
-		}
+        if (!stateManagementTags.isEmpty()) {
+            CodingManager.setCustomTagsForConcreteId(stateManagementTags.toArray(new Tag<?>[0]));
+        }
 
         // then the attributes for the abstract state id
         if (!settings.get(ConfigTags.AbstractStateAttributes).isEmpty()) {
@@ -689,15 +709,19 @@ public class Main {
         }
     }
 
-	/**
-	 * Set the concrete implementation of IEnvironment based on the Operating system on which the application is running.
-	 */
-	private static void initOperatingSystem() {
-		if (NativeLinker.getPLATFORM_OS().contains(OperatingSystems.WINDOWS_10)) {
-			Environment.setInstance(new Windows10());
-		} else {
-			System.out.printf("WARNING: Current OS %s has no concrete environment implementation, using default environment\n", NativeLinker.getPLATFORM_OS());
-			Environment.setInstance(new UnknownEnvironment());
-		}
-	}
+    /**
+     * Set the concrete implementation of IEnvironment based on the Operating system on which the application is running.
+     */
+    private static void initOperatingSystem() {
+        if (NativeLinker.getPLATFORM_OS().contains(OperatingSystems.WINDOWS_10)) {
+            Environment.setInstance(new Windows10());
+        } else {
+            System.out.printf("WARNING: Current OS %s has no concrete environment implementation, using default environment\n", NativeLinker.getPLATFORM_OS());
+            Environment.setInstance(new UnknownEnvironment());
+        }
+    }
+
+    private static void initTagVisualization() {
+        TagFilter.setInstance(new ConcreteTagFilter());
+    }
 }

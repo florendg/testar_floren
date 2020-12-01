@@ -32,6 +32,7 @@ package org.fruit.monkey.dialog;
 
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
+import org.fruit.monkey.SettingsPanel;
 
 import javax.swing.*;
 
@@ -39,7 +40,7 @@ import static org.fruit.monkey.dialog.ToolTipTexts.*;
 import static org.fruit.monkey.dialog.ToolTipTexts.maxTestTimeTTT;
 import static org.fruit.monkey.dialog.ToolTipTexts.useRecordedTTT;
 
-public class TimingPanel extends JPanel {
+public class TimingPanel extends SettingsPanel {
 
   private static final long serialVersionUID = -5878966626046293031L;
 

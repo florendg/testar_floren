@@ -35,6 +35,7 @@ import org.fruit.Pair;
 import org.fruit.Util;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
+import org.fruit.monkey.SettingsPanel;
 
 import javax.swing.*;
 
@@ -51,7 +52,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import static org.fruit.monkey.dialog.ToolTipTexts.copyFilesTTT;
 import static org.fruit.monkey.dialog.ToolTipTexts.deleteFiles;
 
-public class MiscPanel extends JPanel {
+public class MiscPanel extends SettingsPanel {
 
   private static final long serialVersionUID = 8435304494218446662L;
 

@@ -38,6 +38,7 @@ import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.Config;
 import org.fruit.alayer.Tag;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
+import org.fruit.monkey.SettingsPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,7 +54,7 @@ import java.util.stream.Collectors;
 /**
  * Panel with settings for the state model inference module.
  */
-public class StateModelPanel extends JPanel {
+public class StateModelPanel extends SettingsPanel {
 
 	private static final long serialVersionUID = -2815422165938356237L;
     private JLabel label1 = new JLabel("State model enabled");

@@ -45,7 +45,7 @@ import java.util.Observer;
 
 import static org.fruit.monkey.dialog.ToolTipTexts.*;
 
-public class GeneralPanel extends JPanel implements Observer {
+public class GeneralPanel extends SettingsPanel implements Observer {
 
   private static final long serialVersionUID = -7401834140061189752L;
 
@@ -66,7 +66,6 @@ public class GeneralPanel extends JPanel implements Observer {
 
   private JLabel labelOverrideWebDriverDisplayScale = new JLabel("Override display scale");
   private JTextField overrideWebDriverDisplayScaleField = new JTextField();
-
 
   public GeneralPanel(SettingsDialog settingsDialog) {
     setLayout(null);

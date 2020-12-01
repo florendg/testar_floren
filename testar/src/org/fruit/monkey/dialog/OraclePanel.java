@@ -32,6 +32,7 @@ package org.fruit.monkey.dialog;
 
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
+import org.fruit.monkey.SettingsPanel;
 
 import javax.swing.*;
 
@@ -40,7 +41,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static org.fruit.monkey.dialog.ToolTipTexts.suspiciousTitlesTTT;
 
-public class OraclePanel extends JPanel {
+public class OraclePanel extends SettingsPanel {
 
 	private static final long serialVersionUID = -8633257917450402330L;
 
