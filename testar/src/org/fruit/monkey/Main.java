@@ -148,19 +148,28 @@ public class Main {
 
 	}
 
-	private static boolean isValidJavaEnvironment() {
-
+	private static void isValidJavaEnvironment() {
 		try {
+			boolean javacExistsInPath = false;
+			for(String path: System.getenv("PATH").split(File.pathSeparator)) {
+				if(new File(path, "javac").exists()) {
+					javacExistsInPath = true;
+				}
+			}
+			if(! javacExistsInPath)
+				System.out.println("PATH does not contain a Java Development Kit");
+
 			if(!System.getenv("JAVA_HOME").contains("jdk"))
 				System.out.println("JAVA HOME is not properly aiming to the Java Development Kit");
 
 			if(!(System.getenv("JAVA_HOME").contains("1.8") || (System.getenv("JAVA_HOME").contains("-8"))))
-				System.out.println("Java version is not JDK 1.8, please install ");
-		}catch(Exception e) {System.out.println("Exception: Something is wrong with your JAVA_HOME \n"
+				System.out.println("Java version is not JDK 1.8. " +
+						"This software is not tested with your java version, use at your own risk.");
+		}catch(Exception e) {
+			System.out.println("Exception: Something is wrong with your JAVA_HOME \n"
 				+"Check if JAVA_HOME system variable is correctly defined \n \n"
-				+"GO TO: https://testar.org/faq/ to obtain more details \n \n");}
-
-		return true;
+				+"GO TO: https://testar.org/wiki/Main_Page#FAQ to obtain more details \n \n");
+		}
 	}
 	
 	/**
