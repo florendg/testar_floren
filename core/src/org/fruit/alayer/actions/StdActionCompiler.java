@@ -292,8 +292,13 @@ public class StdActionCompiler {
 		for ( int i=0; i<TEXT_REMOVE_TRIES; i++)
 			builder.add(new KeyDown(KBKeys.VK_DELETE), 1).add(new KeyUp(KBKeys.VK_DELETE), 1);
 		*/
-		// Typing the new text:
-		builder.add(new Type(text), 1);
+		if(text.length()==0){
+			//empty string, pressing DEL
+			builder.add(new KeyDown(KBKeys.VK_DELETE),0.1);
+		}else {
+			// Typing the new text:
+			builder.add(new Type(text), 1);
+		}
 		return builder.build();
 	}
 
