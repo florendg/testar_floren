@@ -78,9 +78,6 @@ function traverseElementTestar(parentWrapped, rootElement, ignoredTags) {
 			parentWrapped.wrappedChildren.push(childShadowWrapped);
 		}
 	}
-
-    // No need for it anymore, save serialization effort
-    delete parentWrapped['element'];
 }
 
 /*
@@ -169,6 +166,8 @@ function wrapElementTestar(element, xOffset, yOffset) {
         tagName: element.tagName.toLowerCase(),
         textContent: "",
         value: element.value,
+        checked: element.checked,
+        selected: element.selected,
         display: computedStyle.getPropertyValue('display'),
 
         zIndex: getZIndexTestar(element),

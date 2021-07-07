@@ -483,8 +483,7 @@ public class WebdriverProtocol extends GenericUtilsProtocol {
 	/*
 	 * Force closing of Policies Popup
 	 */
-	protected Set<Action> detectForcedPopupClick(State state,
-			StdActionCompiler ac) {
+	protected Set<Action> detectForcedPopupClick(State state, StdActionCompiler ac) {
 		if (policyAttributes == null || policyAttributes.size() == 0) {
 			return null;
 		}
@@ -502,11 +501,22 @@ public class WebdriverProtocol extends GenericUtilsProtocol {
 				isPopup &= entry.getValue().equals(attribute);
 			}
 			if (isPopup) {
-				return new HashSet<>(Collections.singletonList(ac.leftClickAt(widget)));
+				return new HashSet<>(Collections.singletonList(clickForcedPopupWidget(ac, widget)));
 			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * By default click popup widget using LeftClickAt (Windows level). 
+	 * 
+	 * @param ac
+	 * @param widget
+	 * @return leftClickAt(widget)
+	 */
+	protected Action clickForcedPopupWidget(StdActionCompiler ac, Widget widget) {
+	    return ac.leftClickAt(widget);
 	}
 
 	/*

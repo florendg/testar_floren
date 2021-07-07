@@ -1,0 +1,168 @@
+#################################################################
+# TESTAR mode
+#
+# Set the mode you want TESTAR to start in: Spy, Generate, Replay
+#################################################################
+
+Mode = Spy
+
+#################################################################
+# Connect to the System Under Test (SUT)
+#
+# Indicate how you want to connect to the SUT:
+#
+# SUTCONNECTOR = COMMAND_LINE, SUTConnectorValue property must be a command line that
+# starts the SUT.
+# It should work from a Command Prompt terminal window (e.g. java - jar SUTs/calc.jar ).
+# For web applications, follow the next format: web_browser_path SUT_URL.
+#
+# SUTCONNECTOR = SUT_WINDOW_TITLE, then SUTConnectorValue property must be the title displayed
+# in the SUT main window. The SUT must be manually started and closed.
+#
+# SUTCONNECTOR = SUT_PROCESS_NAME: SUTConnectorValue property must be the process name of the SUT.
+# The SUT must be manually started and closed.
+#
+# SUTCONNECTOR = WEB_DRIVER: SUTConnectorValue property consists of webdriver path and web url
+# Format : <path of webdriver> [optional size/position] <url of web application>
+# Example format for the dimensions and position : 1920x1000+1680+0
+#################################################################
+SUTConnector = WEB_DRIVER
+SUTConnectorValue = "C:\\Windows\\chromedriver.exe" "1920x900+0+0" "https://www.ou.nl"
+
+#################################################################
+# Sequences
+#
+# Number of sequences and the length of these sequences
+#################################################################
+
+Sequences = 1
+SequenceLength = 100
+
+#################################################################
+# Oracles based on suspicious titles
+#
+# Regular expression
+#################################################################
+
+SuspiciousTitles = .*[eE]rror.*|.*[eE]xcepti[o?]n.*
+
+#################################################################
+# Oracles based on Suspicious Outputs detected by Process Listeners
+#
+# Requires ProcessListenerEnabled
+# (Only available for desktop applications through COMMAND_LINE)
+#
+# Regular expression SuspiciousProcessOutput contains the specification
+# of what is considered to be suspicious output.
+#################################################################
+
+ProcessListenerEnabled = false
+SuspiciousProcessOutput = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
+
+#################################################################
+# Process Logs
+#
+# Requires ProcessListenerEnabled
+# (Only available for desktop applications through COMMAND_LINE)
+#
+# Allow TESTAR to store execution logs coming from the processes.
+# You can use the regular expression ProcessLogs below to filter 
+# the logs. Use .*.* if you want to store all the outputs of the 
+# process.
+#################################################################
+
+ProcessLogs = .*.*
+
+#################################################################
+# Actionfilter
+#
+# Regular expression. More filters can be added in Spy mode,
+# these will be added to the protocol_filter.xml file.
+#################################################################
+
+ClickFilter = .*[sS]ave.*|.*[gG]uardar.*|.*[fF]ormat.*|.*[fF]ormatear.*|.*[pP]rint.*|.*[iI]mprimir.*|.*[eE]mail.*|.*[fF]ile.*|.*[aA]rchivo.*|.*[mM]inimize.*|.*[mM]inimizar.*|.*[dD]isconnect.*|.*[dD]esconectar.*
+
+#################################################################
+# Processfilter
+#
+# Regular expression. Kill the processes that your SUT can start up
+# but that you do not want to test.
+#################################################################
+
+SUTProcesses =
+
+#################################################################
+# Protocolclass
+#
+# Indicate the location of the protocol class for your specific SUT.
+#################################################################
+
+ProtocolClass = webdriver_remote_webcomponent/Protocol_webdriver_remote_webcomponent
+
+#################################################################
+# State identifier attributes
+#
+# Specify the widget attributes that you wish to use in constructing
+# the widget and state hash strings. Use a comma separated list.
+#################################################################
+AbstractStateAttributes = WebWidgetId
+
+#################################################################
+# WebDriver features
+#################################################################
+ClickableClasses = v-menubar-menuitem;v-menubar-menuitem-caption
+DeniedExtensions = pdf;jpg;png
+DomainsAllowed = www.ou.nl;mijn.awo.ou.nl;login.awo.ou.nl
+FollowLinks = true
+BrowserFullScreen = true
+SwitchNewTabs = true
+
+#################################################################
+# Override display scale
+#
+# Overrides the displayscale obtained from the system. 
+# Can solve problems when the mouse clicks are not aligned with 
+# the elements on the screen. This can easily be detected when
+# running the spy mode. For example hover over a text element and
+# the popup window should appear with information about the 
+# element, if the popup window is not shown or when the mouse is
+# located somewhere else you can try to override the displayscale
+# Values should be provided as doubles (1.5). 
+#################################################################
+
+OverrideWebDriverDisplayScale = 
+
+#################################################################
+# Other more advanced settings
+#################################################################
+
+ProcessesToKillDuringTest =
+OutputDir = ./output
+PathToReplaySequence = ./output/temp
+TempDir = ./output/temp
+UseRecordedActionDurationAndWaitTimeDuringReplay = false
+ForceForeground = true
+LogLevel = 1
+ExecuteActions = true
+FaultThreshold = 1.0E-9
+DrawWidgetUnderCursor = true
+MyClassPath = ./settings
+OnlySaveFaultySequences = false
+ActionDuration = 0.1
+ShowVisualSettingsDialogOnStartup = true
+ReplayRetryTime = 30.0
+Delete =
+MaxTime = 3.1536E7
+ShowSettingsAfterTest = true
+TimeToWaitAfterAction = 0.1
+StartupTime = 2.0
+DrawWidgetInfo = false
+TimeToFreeze = 30.0
+StopGenerationOnFault = true
+CopyFromTo =
+VisualizeActions = false
+VisualizeSelectedAction = true
+TestGenerator = random
+MaxReward = 9999999
+Discount = .95
+RefreshSpyCanvas = 1.0

@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2019 Open Universiteit - www.ou.nl
- * Copyright (c) 2019 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,21 +30,40 @@
 
 package org.fruit.alayer.actions;
 
-import org.fruit.alayer.Role;
+import org.fruit.alayer.SUT;
+import org.fruit.alayer.State;
+import org.fruit.alayer.Tags;
+import org.fruit.alayer.exceptions.ActionFailedException;
+import org.fruit.alayer.webdriver.WdWidget;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.RemoteWebElement;
 
-public class WdActionRoles {
-	private WdActionRoles(){}
+public class WdRemoteScrollClickAction extends WdRemoteClickAction {
+    private static final long serialVersionUID = -4804242088760009256L;
 
-	public static final Role
-	
-	ExecuteScript = Role.from("ExecuteScript", ActionRoles.Action), 
-	CloseTabScript = Role.from("CloseTabScript", ExecuteScript),
-	HistoryBackScript = Role.from("HistoryBackScript", ExecuteScript),
-	SubmitScript = Role.from("SubmitScript", ExecuteScript),
-	SetAttributeScript = Role.from("SetAttributeScript", ExecuteScript),
-	RemoteAction = Role.from("RemoteAction", ActionRoles.Action),
-	RemoteClick = Role.from("RemoteClick", WdActionRoles.RemoteAction),
-	RemoteScrollClick = Role.from("RemoteScrollClick", WdActionRoles.RemoteClick),
-	RemoteType = Role.from("RemoteType", WdActionRoles.RemoteAction);
-	
+    public WdRemoteScrollClickAction(WdWidget widget) {
+        super(widget);
+        this.set(Tags.Desc, "Remote scroll and click " + widget.element.remoteWebElement.getId());
+        this.set(Tags.Role, WdActionRoles.RemoteScrollClick);
+    }
+
+    @Override
+    public void run(SUT system, State state, double duration) throws ActionFailedException {
+        try {
+            RemoteWebElement remoteElement = widget.element.remoteWebElement;
+            RemoteWebDriver d = (RemoteWebDriver)remoteElement.getWrappedDriver();
+            d.executeScript("arguments[0].scrollIntoView(true)", remoteElement);
+            org.fruit.Util.pause(0.1);
+            remoteElement.click();
+        }
+        catch (Exception e) {
+            logger.warn("Remote scroll and click action failed", e);
+        }
+    }
+
+    @Override
+    public String toShortString() {
+        return "Remote scroll and click " + widget.element.getElementDescription();
+    }
+
 }
